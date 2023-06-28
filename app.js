@@ -32,12 +32,48 @@ async function run() {
     /*====================
     users related apis
     ======================*/
+    // post user
     app.post("/users", async (req, res) => {
       const data = req.body;
+      const query = { email: data.email };
+      const isUserExist = await userCollection.findOne(query);
+      if (isUserExist) {
+        return res.send({ message: "user already exists!" });
+      }
       const result = await userCollection.insertOne(data);
       res.send(result);
     });
+    // get all user
+    app.get("/users", async (req, res) => {
+      const result = await userCollection.find().toArray();
+      res.send(result);
+    });
 
+    // make admin
+    app.patch("/users/admin/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const updatedDoc = {
+        $set: {
+          role: "admin",
+        },
+      };
+      const result = await userCollection.updateOne(query, updatedDoc);
+      res.send(result);
+    });
+
+    // make instructor
+    app.patch("/users/instructor/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const updatedDoc = {
+        $set: {
+          role: "instructor",
+        },
+      };
+      const result = await userCollection.updateOne(query, updatedDoc);
+      res.send(result);
+    });
     /*====================
     selected classes related apis
     ======================*/
