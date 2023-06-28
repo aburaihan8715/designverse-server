@@ -2,7 +2,7 @@ const express = require("express");
 require("dotenv").config();
 const app = express();
 const cors = require("cors");
-const { MongoClient, ServerApiVersion } = require("mongodb");
+const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 
 // middleware
 app.use(cors());
@@ -25,14 +25,48 @@ const client = new MongoClient(uri, {
 
 async function run() {
   try {
-    const classesCollection = client.db("fashionVerseDB").collection("classes");
+    const classCollection = client.db("fashionVerseDB").collection("classes");
+    const selectedClassCollection = client.db("fashionVerseDB").collection("selectedClasses");
+    const userCollection = client.db("fashionVerseDB").collection("users");
+
+    /*====================
+    users related apis
+    ======================*/
+    app.post("/users", async (req, res) => {
+      const data = req.body;
+      const result = await userCollection.insertOne(data);
+      res.send(result);
+    });
+
+    /*====================
+    selected classes related apis
+    ======================*/
+    // post selected classes
+    app.post("/selectedClasses", async (req, res) => {
+      const data = req.body;
+      const result = await selectedClassCollection.insertOne(data);
+      res.send(result);
+    });
+
+    // get all selected classes
+    app.get("/selectedClasses", async (req, res) => {
+      const result = await selectedClassCollection.find().toArray();
+      res.send(result);
+    });
+    // delete a selected class
+    app.delete("/selectedClasses/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await selectedClassCollection.deleteOne(query);
+      res.send(result);
+    });
 
     /*====================
     classes related apis
     ======================*/
     // get all classes data
     app.get("/classes", async (req, res) => {
-      const result = await classesCollection.find().toArray();
+      const result = await classCollection.find().toArray();
       res.send(result);
     });
 
