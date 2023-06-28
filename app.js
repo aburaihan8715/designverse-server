@@ -116,6 +116,21 @@ async function run() {
       res.send(result);
     });
 
+    // update single field
+    app.patch("/classes/:id", async (req, res) => {
+      const id = req.params.id;
+      const data = req.body;
+      const query = { _id: new ObjectId(id) };
+      const options = { upsert: true };
+      const updateDoc = {
+        $set: {
+          status: data.status,
+        },
+      };
+      const result = await classCollection.updateOne(query, updateDoc, options);
+      res.send(result);
+    });
+
     console.log("database connected");
   } finally {
     // Ensures that the client will close when you finish/error
