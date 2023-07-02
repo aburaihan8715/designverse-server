@@ -4,6 +4,7 @@ const app = express();
 const cors = require("cors");
 const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 const jwt = require("jsonwebtoken");
+const stripe = require("stripe")(process.env.PAYMENT_SECRET_KEY);
 
 /*===========================
 middleware
@@ -43,6 +44,7 @@ async function run() {
     const classCollection = client.db("fashionVerseDB").collection("classes");
     const selectedClassCollection = client.db("fashionVerseDB").collection("selectedClasses");
     const userCollection = client.db("fashionVerseDB").collection("users");
+    const paymentCollection = client.db("fashionVerseDB").collection("payments");
 
     // verify admin middleware(note:call the verifyAdmin after verifyJWT)
     const verifyAdmin = async (req, res, next) => {
@@ -67,7 +69,7 @@ async function run() {
     /*====================
     users related apis
     ======================*/
-    // post user
+    // create user
     app.post("/users", async (req, res) => {
       const data = req.body;
       const query = { email: data.email };
@@ -125,7 +127,7 @@ async function run() {
     /*====================
     selected classes related apis
     ======================*/
-    // post selected classes
+    // create selected classes
     app.post("/selectedClasses", async (req, res) => {
       const data = req.body;
       const result = await selectedClassCollection.insertOne(data);
@@ -159,7 +161,7 @@ async function run() {
     /*====================
     classes related apis
     ======================*/
-    // post class
+    // create class
     app.post("/classes", async (req, res) => {
       const data = req.body;
       const result = await classCollection.insertOne(data);
@@ -185,6 +187,35 @@ async function run() {
       };
       const result = await classCollection.updateOne(query, updateDoc, options);
       res.send(result);
+    });
+    /*====================
+    payments related apis
+    ======================*/
+    // create payments
+    app.post("/payments", verifyJWT, async (req, res) => {
+      const data = req.body;
+      const insertResult = await paymentCollection.insertOne(data);
+      const query = { _id: { $in: data.selectedIClassesIds.map((id) => new ObjectId(id)) } };
+      const deleteResult = await selectedClassCollection.deleteMany(query);
+
+      res.send({ insertResult, deleteResult });
+    });
+
+    // create payment intent api
+    app.post("/create-payment-intent", verifyJWT, async (req, res) => {
+      const { price } = req.body;
+      const amount = price * 100;
+
+      // Create a PaymentIntent with the order amount and currency
+      const paymentIntent = await stripe.paymentIntents.create({
+        amount: amount,
+        currency: "usd",
+        payment_method_types: ["card"],
+      });
+
+      res.send({
+        clientSecret: paymentIntent.client_secret,
+      });
     });
 
     console.log("database connected");
