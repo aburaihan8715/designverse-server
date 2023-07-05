@@ -10,11 +10,22 @@
 
 # client code link
 
+https://github.com/programming-hero-web-course1/b712-summer-camp-client-side-aburaihan8715
+
 # server code link
+
+https://github.com/programming-hero-web-course1/b7a12-summer-camp-server_side-aburaihan8715
 
 # live link
 
-# others info
+https://fashionverse-ffe6b.web.app/
 
-- admin pass:
-- admin user name:
+# admin info
+
+- admin pass: Ra@123
+- admin user name: admin
+
+# instructor info
+
+- instructor pass: Ra@123
+- instructor user name: instructor
