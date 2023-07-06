@@ -57,6 +57,16 @@ async function run() {
       next();
     };
 
+    // verify instructor middleware(note:call the verifyInstructor after verifyJWT)
+    const verifyInstructor = async (req, res, next) => {
+      const email = req.decoded.email;
+      const query = { email: email };
+      const user = await userCollection.findOne(query);
+      if (user?.role !== "instructor") {
+        return res.status(403).send({ error: true, message: "forbidden message" });
+      }
+      next();
+    };
     /*====================
     JWT related apis
     ======================*/
@@ -137,7 +147,6 @@ async function run() {
     // get all selected classes
     app.get("/selectedClasses", verifyJWT, async (req, res) => {
       const userEmail = req.query.email;
-      // console.log(userEmail);
       if (!userEmail) {
         res.send([]);
       }
@@ -173,8 +182,22 @@ async function run() {
       const result = await classCollection.find().toArray();
       res.send(result);
     });
+    // get class data based on email
+    app.get("/myClasses", async (req, res) => {
+      const userEmail = req.query.email;
+      if (!userEmail) {
+        res.send([]);
+      }
+      // const decodedEmail = req.decoded.email;
+      // if (userEmail !== decodedEmail) {
+      //   return res.status(403).send({ error: true, message: "forbidden access!" });
+      // }
+      const query = { instructorEmail: userEmail };
+      const result = await classCollection.find(query).toArray();
+      res.send(result);
+    });
 
-    // update single field
+    // update single field class data
     app.patch("/classes/:id", async (req, res) => {
       const id = req.params.id;
       const data = req.body;
@@ -199,6 +222,21 @@ async function run() {
       const deleteResult = await selectedClassCollection.deleteMany(query);
 
       res.send({ insertResult, deleteResult });
+    });
+
+    // get payments data by using email
+    app.get("/payments", verifyJWT, async (req, res) => {
+      const userEmail = req.query.email;
+      if (!userEmail) {
+        res.send([]);
+      }
+      const decodedEmail = req.decoded.email;
+      if (userEmail !== decodedEmail) {
+        return res.status(403).send({ error: true, message: "forbidden access!" });
+      }
+      const query = { email: userEmail };
+      const result = await paymentCollection.find(query).toArray();
+      res.send(result);
     });
 
     // create payment intent api
