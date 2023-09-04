@@ -42,7 +42,7 @@ const client = new MongoClient(uri, {
 async function run() {
   try {
     const classCollection = client.db("fashionVerseDB").collection("classes");
-    const selectedClassCollection = client.db("fashionVerseDB").collection("selectedClasses");
+    const cartCollection = client.db("fashionVerseDB").collection("cart");
     const userCollection = client.db("fashionVerseDB").collection("users");
     const paymentCollection = client.db("fashionVerseDB").collection("payments");
 
@@ -135,17 +135,17 @@ async function run() {
     });
 
     /*====================
-    selected classes related apis
+    cart  related apis
     ======================*/
-    // create selected classes
-    app.post("/selectedClasses", async (req, res) => {
+    // create cart classes
+    app.post("/cart", async (req, res) => {
       const data = req.body;
-      const result = await selectedClassCollection.insertOne(data);
+      const result = await cartCollection.insertOne(data);
       res.send(result);
     });
 
-    // get all selected classes
-    app.get("/selectedClasses", verifyJWT, async (req, res) => {
+    // get all cart classes
+    app.get("/cart", verifyJWT, async (req, res) => {
       const userEmail = req.query.email;
       if (!userEmail) {
         res.send([]);
@@ -155,15 +155,15 @@ async function run() {
         return res.status(403).send({ error: true, message: "forbidden access!" });
       }
       const query = { email: userEmail };
-      const result = await selectedClassCollection.find(query).toArray();
+      const result = await cartCollection.find(query).toArray();
       res.send(result);
     });
 
-    // delete a selected class
-    app.delete("/selectedClasses/:id", async (req, res) => {
+    // delete a cart class
+    app.delete("/cart/:id", async (req, res) => {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) };
-      const result = await selectedClassCollection.deleteOne(query);
+      const result = await cartCollection.deleteOne(query);
       res.send(result);
     });
 
@@ -177,23 +177,24 @@ async function run() {
       res.send(result);
     });
 
-    // get all classes data
+    // get all or some class data based on email
     app.get("/classes", async (req, res) => {
-      const result = await classCollection.find().toArray();
-      res.send(result);
-    });
-    // get class data based on email
-    app.get("/myClasses", async (req, res) => {
-      const userEmail = req.query.email;
-      if (!userEmail) {
-        res.send([]);
+      let query = {};
+      const email = req.query.email;
+      if (email) {
+        query = { "user.email": email };
+        const result = await classCollection.find(query).toArray();
+        return res.send(result);
       }
-      // const decodedEmail = req.decoded.email;
-      // if (userEmail !== decodedEmail) {
-      //   return res.status(403).send({ error: true, message: "forbidden access!" });
-      // }
-      const query = { instructorEmail: userEmail };
       const result = await classCollection.find(query).toArray();
+      return res.send(result);
+    });
+
+    // get class data by id
+    app.get("/classes/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await classCollection.findOne(query);
       res.send(result);
     });
 
@@ -211,6 +212,7 @@ async function run() {
       const result = await classCollection.updateOne(query, updateDoc, options);
       res.send(result);
     });
+
     /*====================
     payments related apis
     ======================*/
@@ -219,7 +221,7 @@ async function run() {
       const data = req.body;
       const insertResult = await paymentCollection.insertOne(data);
       const query = { _id: { $in: data.selectedIClassesIds.map((id) => new ObjectId(id)) } };
-      const deleteResult = await selectedClassCollection.deleteMany(query);
+      const deleteResult = await cartCollection.deleteMany(query);
 
       res.send({ insertResult, deleteResult });
     });
