@@ -140,7 +140,7 @@ cart  related apis start
 // create cart classes
 app.post("/cart", async (req, res) => {
   const data = req.body;
-  const query = { className: data.className };
+  const query = { $and: [{ className: { $eq: data.className } }, { email: { $eq: data.email } }] };
   const cartCollection = await getCollection("cart");
   const isAlreadyAdded = await cartCollection.findOne(query);
   if (isAlreadyAdded) {
@@ -236,15 +236,6 @@ app.patch("/classes/:id", async (req, res) => {
   const result = await classCollection.updateOne(query, updateDoc, options);
   res.send(result);
 });
-
-// get enrolled classes by email
-// app.get("/enrolled", async (req, res) => {
-//   const email = req.query.email;
-//   const query = { email: email };
-//   const paymentCollection = await getCollection("payments");
-//   const result = await paymentCollection.find(query).toArray();
-//   res.send(result);
-// });
 
 /*====================
 classes related apis end
