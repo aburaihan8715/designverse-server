@@ -140,6 +140,7 @@ cart  related apis start
 // create cart classes
 app.post("/cart", async (req, res) => {
   const data = req.body;
+  // console.log(addToCartData);
   const query = { $and: [{ className: { $eq: data.className } }, { email: { $eq: data.email } }] };
   const cartCollection = await getCollection("cart");
   const isAlreadyAdded = await cartCollection.findOne(query);
@@ -205,19 +206,11 @@ app.get("/classes", async (req, res) => {
 });
 
 // get class data by id
-// app.get("/classes/:id", async (req, res) => {
-//   const id = req.params.id;
-//   const query = { _id: new ObjectId(id) };
-//   const classCollection = await getCollection("classes");
-//   const result = await classCollection.findOne(query);
-//   res.send(result);
-// });
-
-app.get("/classes/:email", async (req, res) => {
-  const email = req.params.email;
-  const query = { "user.userEmail": email };
+app.get("/classes/:id", async (req, res) => {
+  const id = req.params.id;
+  const query = { _id: new ObjectId(id) };
   const classCollection = await getCollection("classes");
-  const result = await classCollection.find(query).toArray();
+  const result = await classCollection.findOne(query);
   res.send(result);
 });
 
@@ -234,6 +227,30 @@ app.patch("/classes/:id", async (req, res) => {
   };
   const classCollection = await getCollection("classes");
   const result = await classCollection.updateOne(query, updateDoc, options);
+  res.send(result);
+});
+
+// update class data
+app.put("/classes/:id", async (req, res) => {
+  const id = req.params.id;
+  const data = req.body;
+  // console.log(data);
+  const query = { _id: new ObjectId(id) };
+  const options = { upsert: true };
+  const updateDoc = {
+    $set: data,
+  };
+  const classCollection = await getCollection("classes");
+  const result = await classCollection.updateOne(query, updateDoc, options);
+  res.send(result);
+});
+
+// delete class by id
+app.delete("/classes/:id", async (req, res) => {
+  const id = req.params.id;
+  const query = { _id: new ObjectId(id) };
+  const classCollection = await getCollection("classes");
+  const result = await classCollection.deleteOne(query);
   res.send(result);
 });
 

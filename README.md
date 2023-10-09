@@ -24,8 +24,16 @@ https://fashionverse-ffe6b.web.app/
 
 - admin pass: Ra@123
 - admin user name: admin
+- admin email : admin@gmail.com
 
 # instructor info
 
 - instructor pass: Ra@123
 - instructor user name: instructor
+- instructor email : instructor@gmail.com
+
+# student info
+
+- student pass: Ra@123
+- student user name: student
+- student email : student@gmail.com
