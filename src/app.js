@@ -92,7 +92,7 @@ app.get("/users", verifyJWT, verifyAdmin, async (req, res) => {
 });
 
 // make role
-app.patch("/users/role/:id", async (req, res) => {
+app.patch("/users/role/:id", verifyJWT, verifyAdmin, async (req, res) => {
   const id = req.params.id;
   const data = req.body;
   const query = { _id: new ObjectId(id) };
@@ -122,7 +122,7 @@ app.get("/users/role/:email", verifyJWT, async (req, res) => {
 });
 
 // delete user
-app.delete("/users/:id", async (req, res) => {
+app.delete("/users/:id", verifyJWT, verifyAdmin, async (req, res) => {
   const id = req.params.id;
   const query = { _id: new ObjectId(id) };
   const userCollection = await getCollection("users");
@@ -137,23 +137,24 @@ users related apis end
 /*====================
 cart  related apis start
 ======================*/
-// create cart classes
-app.post("/cart", async (req, res) => {
-  const data = req.body;
+// create cart
+app.post("/cart", verifyJWT, async (req, res) => {
+  const addToCartData = req.body;
   // console.log(addToCartData);
-  const query = { $and: [{ className: { $eq: data.className } }, { email: { $eq: data.email } }] };
+  const query = { $and: [{ selectedClassId: { $eq: addToCartData.selectedClassId } }, { instructorEmail: { $eq: addToCartData.instructorEmail } }] };
   const cartCollection = await getCollection("cart");
   const isAlreadyAdded = await cartCollection.findOne(query);
   if (isAlreadyAdded) {
     return res.json({ alreadyAdded: true });
   }
-  const result = await cartCollection.insertOne(data);
+  const result = await cartCollection.insertOne(addToCartData);
   res.send(result);
 });
 
-// get all cart classes
+// get all cart
 app.get("/cart", verifyJWT, async (req, res) => {
   const userEmail = req.query.email;
+  // console.log(userEmail);
   if (!userEmail) {
     res.send([]);
   }
@@ -161,14 +162,14 @@ app.get("/cart", verifyJWT, async (req, res) => {
   if (userEmail !== decodedEmail) {
     return res.status(403).send({ error: true, message: "forbidden access!" });
   }
-  const query = { email: userEmail };
+  const query = { userEmail: userEmail };
   const cartCollection = await getCollection("cart");
   const result = await cartCollection.find(query).toArray();
   res.send(result);
 });
 
-// delete a cart class
-app.delete("/cart/:id", async (req, res) => {
+// delete a cart
+app.delete("/cart/:id", verifyJWT, async (req, res) => {
   const id = req.params.id;
   const query = { _id: new ObjectId(id) };
   const cartCollection = await getCollection("cart");
@@ -184,7 +185,7 @@ cart  related apis end
 classes related apis start
 ======================*/
 // create class
-app.post("/classes", async (req, res) => {
+app.post("/classes", verifyJWT, verifyInstructor, async (req, res) => {
   const data = req.body;
   const classCollection = await getCollection("classes");
   const result = await classCollection.insertOne(data);
@@ -197,7 +198,7 @@ app.get("/classes", async (req, res) => {
   const email = req.query.email;
   const classCollection = await getCollection("classes");
   if (email) {
-    query = { "user.userEmail": email };
+    query = { instructorEmail: email };
     const result = await classCollection.find(query).toArray();
     return res.send(result);
   }
@@ -231,7 +232,7 @@ app.patch("/classes/:id", async (req, res) => {
 });
 
 // update class data
-app.put("/classes/:id", async (req, res) => {
+app.put("/classes/:id", verifyInstructor, async (req, res) => {
   const id = req.params.id;
   const data = req.body;
   // console.log(data);
@@ -264,14 +265,38 @@ payments related apis start
 // create payments
 app.post("/payments", verifyJWT, async (req, res) => {
   const data = req.body;
-  // console.log(data);
+  const selectedIClassesIds = data.selectedIClassesIds;
+  // console.log(selectedIClassesIds);
   const paymentCollection = await getCollection("payments");
   const insertResult = await paymentCollection.insertOne(data);
   // console.log(insertResult);
-  const query = { _id: { $in: data.selectedIClassesIds.map((id) => new ObjectId(id)) } };
-  // console.log(query);
+  const query = { selectedClassId: { $in: data.selectedIClassesIds.map((id) => id) } };
+
   const cartCollection = await getCollection("cart");
   const deleteResult = await cartCollection.deleteMany(query);
+  const classCollection = await getCollection("classes");
+
+  // update enrolled student and seats
+  const updatePromises = selectedIClassesIds.map(async (selectedIClassesId) => {
+    const classToUpdate = await classCollection.findOne({ classId: selectedIClassesId });
+
+    if (classToUpdate) {
+      // Update studentEnrolled and seats fields
+      if (classToUpdate.studentEnrolled !== null && classToUpdate.studentEnrolled !== undefined) {
+        classToUpdate.studentEnrolled += 1;
+      }
+
+      if (classToUpdate.seats > 0) {
+        classToUpdate.seats -= 1;
+      }
+
+      // Update the document in the collection
+      await classCollection.updateOne({ classId: selectedIClassesId }, { $set: classToUpdate });
+    }
+  });
+
+  await Promise.all(updatePromises);
+
   res.send({ insertResult, deleteResult });
 });
 
@@ -285,7 +310,7 @@ app.get("/payments", verifyJWT, async (req, res) => {
   if (userEmail !== decodedEmail) {
     return res.status(403).send({ error: true, message: "forbidden access!" });
   }
-  const query = { email: userEmail };
+  const query = { userEmail: userEmail };
   const paymentCollection = await getCollection("payments");
   const result = await paymentCollection.find(query).toArray();
   res.send(result);
