@@ -130,6 +130,23 @@ app.delete("/users/:id", verifyJWT, verifyAdmin, async (req, res) => {
   res.send(result);
 });
 
+// update name and image field
+app.put("/users/:email", verifyJWT, async (req, res) => {
+  const email = req.params.email;
+  const data = req.body;
+  const query = { email: email };
+  const options = { upsert: true };
+  const updateDoc = {
+    $set: {
+      name: data.name,
+      image: data.imgURL,
+    },
+  };
+  const userCollection = await getCollection("users");
+  const result = await userCollection.updateOne(query, updateDoc, options);
+  res.send(result);
+});
+
 /*====================
 users related apis end
 ======================*/
@@ -219,8 +236,8 @@ app.get("/classes/:id", async (req, res) => {
 app.patch("/classes/:id", async (req, res) => {
   const id = req.params.id;
   const data = req.body;
-  const query = { _id: new ObjectId(id) };
   const options = { upsert: true };
+  const query = { _id: new ObjectId(id) };
   const updateDoc = {
     $set: {
       status: data.status,
@@ -228,6 +245,24 @@ app.patch("/classes/:id", async (req, res) => {
   };
   const classCollection = await getCollection("classes");
   const result = await classCollection.updateOne(query, updateDoc, options);
+  res.send(result);
+});
+
+// update name and image
+app.patch("/classes", async (req, res) => {
+  const email = req.query.email;
+  const data = req.body;
+
+  const query = { instructorEmail: email };
+  const options = { upsert: true };
+  const updateDoc = {
+    $set: {
+      instructorName: data.name,
+      instructorImage: data.imgURL,
+    },
+  };
+  const classCollection = await getCollection("classes");
+  const result = await classCollection.updateMany(query, updateDoc, options);
   res.send(result);
 });
 
@@ -266,17 +301,18 @@ payments related apis start
 app.post("/payments", verifyJWT, async (req, res) => {
   const data = req.body;
   const selectedIClassesIds = data.selectedIClassesIds;
-  // console.log(selectedIClassesIds);
+
   const paymentCollection = await getCollection("payments");
   const insertResult = await paymentCollection.insertOne(data);
-  // console.log(insertResult);
+
   const query = { selectedClassId: { $in: data.selectedIClassesIds.map((id) => id) } };
 
+  // update cart collection
   const cartCollection = await getCollection("cart");
   const deleteResult = await cartCollection.deleteMany(query);
-  const classCollection = await getCollection("classes");
 
   // update enrolled student and seats
+  const classCollection = await getCollection("classes");
   const updatePromises = selectedIClassesIds.map(async (selectedIClassesId) => {
     const classToUpdate = await classCollection.findOne({ classId: selectedIClassesId });
 
@@ -290,7 +326,7 @@ app.post("/payments", verifyJWT, async (req, res) => {
         classToUpdate.seats -= 1;
       }
 
-      // Update the document in the collection
+      // Update the class collection
       await classCollection.updateOne({ classId: selectedIClassesId }, { $set: classToUpdate });
     }
   });
