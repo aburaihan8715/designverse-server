@@ -233,7 +233,7 @@ app.get("/classes/:id", async (req, res) => {
 });
 
 // update single field class data
-app.patch("/classes/:id", async (req, res) => {
+app.patch("/classes/:id", verifyJWT, verifyInstructor, async (req, res) => {
   const id = req.params.id;
   const data = req.body;
   const options = { upsert: true };
@@ -249,7 +249,7 @@ app.patch("/classes/:id", async (req, res) => {
 });
 
 // update name and image
-app.patch("/classes", async (req, res) => {
+app.patch("/classes", verifyJWT, async (req, res) => {
   const email = req.query.email;
   const data = req.body;
 
@@ -267,7 +267,7 @@ app.patch("/classes", async (req, res) => {
 });
 
 // update class data
-app.put("/classes/:id", verifyInstructor, async (req, res) => {
+app.put("/classes/:id", verifyJWT, verifyInstructor, async (req, res) => {
   const id = req.params.id;
   const data = req.body;
   // console.log(data);
@@ -282,7 +282,7 @@ app.put("/classes/:id", verifyInstructor, async (req, res) => {
 });
 
 // delete class by id
-app.delete("/classes/:id", async (req, res) => {
+app.delete("/classes/:id", verifyJWT, verifyInstructor, async (req, res) => {
   const id = req.params.id;
   const query = { _id: new ObjectId(id) };
   const classCollection = await getCollection("classes");
@@ -372,6 +372,26 @@ app.post("/create-payment-intent", verifyJWT, async (req, res) => {
 /*====================
 payments related apis end
 ======================*/
+
+/*==========================
+testimonial related apis start
+===========================*/
+app.post("/testimonials", verifyJWT, async (req, res) => {
+  const data = req.body;
+  const testimonialCollection = await getCollection("testimonials");
+  const result = await testimonialCollection.insertOne(data);
+  res.send(result);
+});
+
+app.get("/testimonials", verifyJWT, async (req, res) => {
+  const testimonialCollection = await getCollection("testimonials");
+  const result = await testimonialCollection.find({}).toArray();
+  res.send(result);
+});
+
+/*==========================
+testimonial related apis end
+===========================*/
 
 module.exports = app;
 // ===========end===========
