@@ -248,6 +248,23 @@ app.patch("/classes/:id", verifyJWT, verifyInstructor, async (req, res) => {
   res.send(result);
 });
 
+// update single field class data
+app.patch("/classes/feedback/:id", verifyJWT, verifyAdmin, async (req, res) => {
+  const id = req.params.id;
+  const data = req.body;
+
+  const options = { upsert: true };
+  const query = { _id: new ObjectId(id) };
+  const updateDoc = {
+    $set: {
+      adminFeedback: data.feedback,
+    },
+  };
+  const classCollection = await getCollection("classes");
+  const result = await classCollection.updateOne(query, updateDoc, options);
+  res.send(result);
+});
+
 // update name and image
 app.patch("/classes", verifyJWT, async (req, res) => {
   const email = req.query.email;
