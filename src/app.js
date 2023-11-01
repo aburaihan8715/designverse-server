@@ -96,7 +96,6 @@ app.patch("/users/role/:id", verifyJWT, verifyAdmin, async (req, res) => {
   const id = req.params.id;
   const data = req.body;
   const query = { _id: new ObjectId(id) };
-
   const updateDoc = {
     $set: {
       role: data.role,
@@ -357,16 +356,14 @@ app.post("/payments", verifyJWT, async (req, res) => {
 
 // get payments data by email
 app.get("/payments", verifyJWT, async (req, res) => {
+  let query = {};
   const userEmail = req.query.email;
-  if (!userEmail) {
-    res.send([]);
-  }
-  const decodedEmail = req.decoded.email;
-  if (userEmail !== decodedEmail) {
-    return res.status(403).send({ error: true, message: "forbidden access!" });
-  }
-  const query = { userEmail: userEmail };
   const paymentCollection = await getCollection("payments");
+  if (userEmail) {
+    query = { userEmail: userEmail };
+    const result = await paymentCollection.find(query).toArray();
+    return res.send(result);
+  }
   const result = await paymentCollection.find(query).toArray();
   res.send(result);
 });
