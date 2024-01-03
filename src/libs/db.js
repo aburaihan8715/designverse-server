@@ -1,5 +1,24 @@
+import mongoose from "mongoose";
+import { mongoDbUri } from "../variables/secret.js";
+
+const connectDb = async (options = {}) => {
+  try {
+    await mongoose.connect(mongoDbUri, options);
+    console.log("Db is connected!");
+    mongoose.connection.on("error", (error) => {
+      console.log("Db connection error", error);
+    });
+  } catch (error) {
+    console.log("Db connection failed", error);
+    process.exit(1);
+  }
+};
+
+export { connectDb };
+
+/*
 const { MongoClient, ServerApiVersion } = require("mongodb");
-require("dotenv").config();
+import 'dotenv/config'
 
 // connection string
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster1.eujox13.mongodb.net/fashionVerseDB?retryWrites=true&w=majority`;
@@ -29,3 +48,4 @@ async function getCollection(collectionName) {
 }
 
 module.exports = getCollection;
+*/

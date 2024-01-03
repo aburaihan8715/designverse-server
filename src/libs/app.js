@@ -1,15 +1,29 @@
+import express from "express";
+import morgan from "morgan";
+
+const app = express();
+
+// middleware
+app.use(morgan("dev"));
+
+// home route
+app.get("/", async (req, res) => {
+  res.json({ message: "Hello from home route!" });
+});
+
+export { app };
+
+/*
 const express = require("express");
 require("dotenv").config();
 const app = express();
 const cors = require("cors");
 const jwt = require("jsonwebtoken");
-const getCollection = require("./libs/db");
+const getCollection = require("./db");
 const { ObjectId } = require("mongodb");
 const stripe = require("stripe")(process.env.PAYMENT_SECRET_KEY);
 
-/*===========================
-middleware start
-=============================*/
+
 app.use(cors());
 app.use(express.json());
 // middleware function for verifying token
@@ -51,26 +65,18 @@ const verifyInstructor = async (req, res, next) => {
   }
   next();
 };
-/*===========================
-middleware end
-=============================*/
 
-/*====================
-JWT related apis start
-======================*/
+
+
 app.post("/jwt", (req, res) => {
   const userEmail = req.body;
   const token = jwt.sign(userEmail, process.env.JWT_SECRET_KEY, { expiresIn: "1h" });
   res.send({ token });
 });
 
-/*====================
-JWT related apis end
-======================*/
 
-/*====================
-users related apis start
-======================*/
+
+
 // create user
 app.post("/users", async (req, res) => {
   const data = req.body;
@@ -144,13 +150,9 @@ app.put("/users/:email", verifyJWT, async (req, res) => {
   res.send(result);
 });
 
-/*====================
-users related apis end
-======================*/
 
-/*====================
-cart  related apis start
-======================*/
+
+
 // create cart
 app.post("/cart", verifyJWT, async (req, res) => {
   const addToCartData = req.body;
@@ -189,13 +191,9 @@ app.delete("/cart/:id", verifyJWT, async (req, res) => {
   res.send(result);
 });
 
-/*====================
-cart  related apis end
-======================*/
 
-/*====================
-classes related apis start
-======================*/
+
+
 // create class
 app.post("/classes", verifyJWT, verifyInstructor, async (req, res) => {
   const data = req.body;
@@ -309,13 +307,8 @@ app.delete("/classes/:id", verifyJWT, verifyInstructor, async (req, res) => {
   res.send(result);
 });
 
-/*====================
-classes related apis end
-======================*/
 
-/*====================
-payments related apis start
- ======================*/
+
 // create payments
 app.post("/payments", verifyJWT, async (req, res) => {
   const data = req.body;
@@ -384,13 +377,8 @@ app.post("/create-payment-intent", verifyJWT, async (req, res) => {
     clientSecret: paymentIntent.client_secret,
   });
 });
-/*====================
-payments related apis end
-======================*/
 
-/*==========================
-testimonial related apis start
-===========================*/
+
 app.post("/testimonials", verifyJWT, async (req, res) => {
   const data = req.body;
   const testimonialCollection = await getCollection("testimonials");
@@ -404,9 +392,6 @@ app.get("/testimonials", async (req, res) => {
   res.send(result);
 });
 
-/*==========================
-testimonial related apis end
-===========================*/
-
 module.exports = app;
 // ===========end===========
+*/
