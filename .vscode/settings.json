@@ -1,4 +1,5 @@
 {
+  // this for vscode hilight
   "workbench.colorCustomizations": {
     "activityBar.background": "#b40303",
     "activityBar.foreground": "#edeaf0",
@@ -7,5 +8,43 @@
     "statusBar.foreground": "#edeaf0",
     "titleBar.activeBackground": "#b40303",
     "titleBar.activeForeground": "#edeaf0",
-  }
+  },
+  "cSpell.words": [
+    "designverse"
+  ],
+  // this is for todo hilight
+  "todohighlight.isEnable": true,
+  "todohighlight.isCaseSensitive": true,
+  "todohighlight.keywords": [
+    {
+      "text": "NOTE:",
+      "color": "#fff",
+      "backgroundColor": "#bf0603",
+      "isWholeLine": false,
+    },
+    {
+      "text": "FIXME:",
+      "color": "#fff",
+      "backgroundColor": "#ff006e",
+      "isWholeLine": false,
+    },
+    {
+      "text": "TODO:",
+      "color": "#fff",
+      "backgroundColor": "#9d4edd",
+      "isWholeLine": false,
+    },
+    {
+      "text": "DOUBT:",
+      "color": "#fff",
+      "backgroundColor": "#3772ff",
+      "isWholeLine": false,
+    },
+    {
+      "text": "IMPORTANT:",
+      "color": "#fff",
+      "backgroundColor": "#f59e0b",
+      "isWholeLine": false,
+    },
+  ],
 }
