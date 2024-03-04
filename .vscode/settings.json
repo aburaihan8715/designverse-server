@@ -1,15 +1,46 @@
 {
+  // ======this is for workspace settings=====
   "workbench.colorCustomizations": {
-    "activityBar.background": "#b40303",
+    "activityBar.background": "#b4039f",
     "activityBar.foreground": "#edeaf0",
     "activityBar.activeBackground": "#4b088e",
-    "statusBar.background": "#b40303",
+    "statusBar.background": "#b4039f",
     "statusBar.foreground": "#edeaf0",
-    "titleBar.activeBackground": "#b40303",
+    "titleBar.activeBackground": "#b4039f",
     "titleBar.activeForeground": "#edeaf0",
   },
-  "cSpell.words": [
-    "designverse",
-    "fashionverse"
-  ]
+  "todohighlight.isEnable": true,
+  "todohighlight.isCaseSensitive": true,
+  "todohighlight.keywords": [
+    {
+      "text": "NOTE:",
+      "color": "#fff",
+      "backgroundColor": "#bf0603",
+      "isWholeLine": false,
+    },
+    {
+      "text": "FIXME:",
+      "color": "#fff",
+      "backgroundColor": "#ff006e",
+      "isWholeLine": false,
+    },
+    {
+      "text": "TODO:",
+      "color": "#fff",
+      "backgroundColor": "#9d4edd",
+      "isWholeLine": false,
+    },
+    {
+      "text": "DOUBT:",
+      "color": "#fff",
+      "backgroundColor": "#3772ff",
+      "isWholeLine": false,
+    },
+    {
+      "text": "IMPORTANT:",
+      "color": "#fff",
+      "backgroundColor": "#f59e0b",
+      "isWholeLine": false,
+    },
+  ],
 }

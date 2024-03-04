@@ -3,16 +3,18 @@ import bcrypt from 'bcryptjs';
 
 const userSchema = new mongoose.Schema(
   {
-    name: {
+    username: {
       type: String,
-      required: [true, 'Please tell us your name'],
+      unique: true,
+      required: [true, 'Username is required'],
       minLength: [3, 'Name should be minimum 3 characters!'],
       maxLength: [30, 'Name should be maximum 30 characters!'],
+      trim: true,
     },
 
     email: {
       type: String,
-      required: [true, 'Please provide your name'],
+      required: [true, 'Please provide your email'],
       unique: true,
       lowercase: true,
       validate: {
@@ -41,12 +43,14 @@ const userSchema = new mongoose.Schema(
 
     photo: {
       type: String,
-      default: '',
     },
 
     phone: {
       type: String,
-      required: false,
+    },
+
+    fullName: {
+      type: String,
     },
 
     role: {
