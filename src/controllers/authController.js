@@ -6,18 +6,19 @@ import { User } from '../models/userModel.js';
 import { createJWT } from '../utils/createJWT.js';
 import { jwtSecretKey } from '../libs/secret.js';
 import { successResponse } from '../utils/response.js';
+import jwt from 'jsonwebtoken';
 
 // CREATE USER
 const register = async (req, res, next) => {
   try {
     await connectDb();
-    // CHECK WEATHER USER ALREADY EXISTS
+    // check if user is already registered
     const isUserExists = await User.findOne({
       email: req.body.email,
     });
     if (isUserExists) throw createError(409, 'User already exists');
 
-    // CREATE USER
+    // create a new user
     const newUser = new User({
       username: req.body.username,
       email: req.body.email,
@@ -27,15 +28,15 @@ const register = async (req, res, next) => {
     const user = await newUser.save();
     const { password, __v, ...others } = user._doc;
 
-    // SEND RESPONSE
+    // send response
     successResponse(res, { statusCode: 201, data: { ...others } });
   } catch (error) {
     next(error);
   }
 };
 
-// CREATE TOKEN
-const createToken = async (req, res, next) => {
+// CREATE TOKEN AND SEND IT TO THE CLIENT
+const getToken = async (req, res, next) => {
   try {
     const token = await createJWT({ email: req.body.email }, jwtSecretKey);
 
@@ -45,8 +46,8 @@ const createToken = async (req, res, next) => {
   }
 };
 
-// CREATE TOKEN
-const restrict = async (req, res, next) => {
+// VERIFY AUTHENTICATION
+const verifyAuthentication = async (req, res, next) => {
   // 1) Getting token and check of it's there
   let token;
   if (
@@ -84,8 +85,8 @@ const restrict = async (req, res, next) => {
   next();
 };
 
-// CREATE TOKEN
-const restrictTo = async (...roles) => {
+// VERIFY AUTHORITY
+const verifyAuthority = (...roles) => {
   return (req, res, next) => {
     // roles ['user','admin','user']
     if (!roles.includes(req.user.role)) {
@@ -97,4 +98,4 @@ const restrictTo = async (...roles) => {
   };
 };
 
-export { register, createToken, restrict, restrictTo };
+export { register, getToken, verifyAuthentication, verifyAuthority };

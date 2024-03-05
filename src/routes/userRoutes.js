@@ -4,8 +4,11 @@ import * as authController from '../controllers/authController.js';
 
 const router = express.Router();
 
-router.route('/token').post(authController.createToken);
-router.route('/').get(userController.getAllUsers).post(authController.register);
+router.route('/token').post(authController.getToken);
+router
+  .route('/')
+  .get(authController.verifyAuthentication, userController.getAllUsers)
+  .post(authController.register);
 router
   .route('/:id')
   .get(userController.getUser)
